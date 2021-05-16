@@ -1,0 +1,151 @@
+<html>
+<head>
+  <title> Codaphone - Auditory representations of programs </title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
+<script src="js/skulpt.min.js" type="text/javascript"></script>
+<script src="js/skulpt-stdlib.js" type="text/javascript"></script>
+<script src="readCode.js" type="text/javascript"></script>
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body onload="allowTabs()">
+
+  <div>
+    <audio id="newVarSound">
+      <source src="sounds/create_var.wav" type="audio/wav">
+    </audio>
+    <audio id="setVarValueSound">
+      <source src="sounds/stamp.wav" type="audio/wav">
+    </audio>
+    <audio id="arithmetic">
+      <source src="sounds/squeaky_toy.wav" type="audio/wav">
+    </audio>
+    <audio id="snap">
+      <source src="sounds/snap.wav" type="audio/wav">
+    </audio>
+    <audio id="boolean">
+      <source src="sounds/pop.wav" type="audio/wav">
+    </audio>
+    <audio id="trueSound">
+      <source src="sounds/true.wav" type="audio/wav">
+    </audio>
+    <audio id="falseSound">
+      <source src="sounds/false.wav" type="audio/wav">
+    </audio>
+    <audio id="ifSound">
+      <source src="sounds/if.wav" type="audio/wav">>
+    </audio>
+    <audio id="elif1Sound">
+      <source src="sounds/elif-1.wav" type="audio/wav">
+    </audio>
+    <audio id="elif2Sound">
+      <source src="sounds/elif-2.wav" type="audio/wav">
+    </audio>
+  </div>
+
+<script type="text/javascript">
+// output functions are configurable.  This one just appends some text
+// to a pre element.
+function outf(text) {
+    var mypre = document.getElementById("output");
+    mypre.innerHTML = mypre.innerHTML + text;
+}
+function builtinRead(x) {
+    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+            throw "File not found: '" + x + "'";
+    return Sk.builtinFiles["files"][x];
+}
+
+
+// Here's everything you need to run a python program in skulpt
+// grab the code from your textarea
+// get a reference to your pre element for output
+// configure the output function
+// call Sk.importMainWithBody()
+function runit() {
+   var prog = document.getElementById("yourcode").value;
+   var mypre = document.getElementById("output");
+   mypre.innerHTML = '';
+   Sk.pre = "output";
+   Sk.configure({output:outf, read:builtinRead});
+   (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
+   var myPromise = Sk.misceval.asyncToPromise(function() {
+       return Sk.importMainWithBody("<stdin>", false, prog, true);
+   });
+   myPromise.then(function(mod) {
+       console.log('success');
+       //console.log(prog)
+       getCode();
+       runLines();
+   },
+       function(err) {
+       console.log(err.toString());
+       document.getElementById("error").innerHTML = err.toString();
+   });
+
+}
+
+</script>
+
+
+<div id="heading">
+  <h1>C O D A P H O N E
+    <span class="subheading"> ➞ Auditory <br> ➞ representations <br> ➞ of programs </span>
+  </h1>
+</div>
+
+<div id="col1">
+  <form>
+    <textarea id="yourcode" wrap="off"># insert Python code here</textarea><br />
+    <button type="button" onclick="runit(); clearCanvas()"><span>R U N</span></button>
+  </form>
+<h4> Output </h4>
+<pre id="output" ></pre>
+
+<p id="error"></p>
+
+<p id="trial"> </p>
+</div>
+
+<div id="col2">
+      <div id="display">
+          <div id="memory">
+            <div id="stack_and_global">
+              <div id="stack">
+                <div class="area_label"> STACK </div>
+                <div class="scroll_height" id="scroll_stack"> </div>
+                <div id="stack_for_scrolling">
+                  <div id="frames_container">
+
+                  </div>
+                </div>
+              </div>
+              <div id="global">
+                <div class="area_label"> GLOBAL </div>
+                <div class="hold_variables" id="global_variables"></div>
+              </div>
+            </div>
+            <div id="heap">
+              <div class="area_label"> HEAP </div>
+            </div>
+          </div>
+
+        <div id="lines">
+          <div class="scroll_height" id="scroll_lines"> </div>
+          <div id="lines_for_scrolling">
+            <div id="lines_container">
+
+              <div class="line" id="line0"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<div id="area"></div>
+
+
+
+</body>
+
+</html>
