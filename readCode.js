@@ -29,7 +29,11 @@ function getCode()
 function runLines()
 {
     makeBlocks();
+    initializeHarmonics();
+    document.getElementById("harmonic1").play();
     runBlock(codeLinesList);
+    counter++;
+    setTimeout(pauseHarmonic, counter * TIMEINTERVAL, stackFrameIndex);
 }
 
 /*
@@ -254,8 +258,6 @@ function extractInnermostParentheses(expression)
 
 /*
  * parse currLine and figure out what it does
- * TODO: add support to evaluate functions
- * TODO: skip comments
  */
 function line(currLine)
 {
@@ -833,7 +835,6 @@ function parseExpression(expression)
 /*
  * return numerical value of the input string
  * return the value stored in the variable, if it's a variable
- * TODO: value might be a function call
  */
 function getNumericalValue(value)
 {
@@ -1324,11 +1325,13 @@ function playBooleanResultSound(result)
  function playEvaluateBoolSound() { document.getElementById("boolean").play(); }
  function playEvalArithSound() { document.getElementById("arithmetic").play(); }
  function playSnapSound() { document.getElementById("snap").play(); }
+ function playHarmonic(stackFrameI)
+     { document.getElementById("harmonic" + (stackFrameI + 1)).play(); }
+ function pauseHarmonic(stackFrameI)
+     { document.getElementById("harmonic" + (stackFrameI + 1)).pause(); }
 
 /*
  * show new variable on screen
- * TODO: make sure that variables of the same name on different stack
- *       frames aren't mixed up with the same div id
  */
 function showNewVariable(varId)
 {
@@ -1351,8 +1354,6 @@ function showNewVariable(varId)
 /*
  * highlight a portion of the line that's currently running
  * return the html to put in div with id #current_line
- * TODO: make sure that variables of the same name on different stack
- * frames aren't mixed up with the same div id
  * TODO: multiple of the same expression on the same line
  */
 function highlightPortion(portion, id, comesAfter)
@@ -1515,6 +1516,8 @@ function addFrame(functionName, params, args, stackFrameI)
                             + lineContents +  '</div>';
     let newLinesContents = newLineHTML + currentLines;
     document.getElementById("lines_container").innerHTML = newLinesContents;
+
+    playHarmonic(stackFrameI); ///// add harmonic /////
 }
 
 /*
@@ -1561,6 +1564,8 @@ function removeFrame(stackFrameI)
     ///// line /////
     remove = document.getElementById("line" + stackFrameI);
     remove.parentNode.removeChild(remove);
+
+    pauseHarmonic(stackFrameI); ///// harmonic /////
 }
 
 /*
@@ -1628,9 +1633,22 @@ function unhighlightParentheses(stackFrameI)
 function clearCanvas()
 {
     document.getElementById("global_variables").innerHTML = "";
+    document.getElementById("frames_container").innerHTML = "";
     counter = 0;
     codeLinesList = [];
     variables = {};
+    functions = {};
+}
+
+//loop harmonic playback, lower volume
+function initializeHarmonics()
+{
+    for(let i = 1; i < 7; i++)
+    {
+        let currSound = document.getElementById("harmonic" + i);
+        currSound.loop = true;
+        currSound.volume = 0.4;
+    }
 }
 
 //from stackoverflow
