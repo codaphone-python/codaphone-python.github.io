@@ -3,6 +3,7 @@ var variables = {};
 const TIMEINTERVAL = 1750;
 var counter = 0;
 var functions = {};
+var heap = {};
 var stackFrameIndex = 0;
 
 const operators = ["**", "*", "/", "//", "%", "+", "-"];
@@ -302,7 +303,7 @@ function line(currLine)
         { return evaluate(currLine.substring(7).trim()); }
 
     //value is an expression
-    else { result = evaluate(currLine); }
+    else { result = evaluate(currLine.trim()); }
 
     if(assignVariable)
     {
@@ -358,7 +359,7 @@ function evaluate(expression)
     {
         let goodSpacing = maybeFunctionCall[0] + "("
                                  + maybeFunctionCall[1].join(", ") + ")";
-        console.log(expression, goodSpacing)
+
         if(!(expression === goodSpacing))
         {
             counter++;
@@ -366,6 +367,12 @@ function evaluate(expression)
                                expression, goodSpacing, stackFrameIndex);
         }
         result = runFunction(maybeFunctionCall[0], maybeFunctionCall[1]);
+    }
+
+    //check: list
+    else if(expression[0] === "[" && expression[expression.length-1] === "]")
+    {
+        result = createList(expression);
     }
 
     else
@@ -1058,16 +1065,8 @@ function doArithmetic(expression)
  */
 function runFunction(functionName, args)
 {
-    let highlightAgain = false;
-    //evaluate all of the arguments first
-    for(let i = 0; i < args.length; i++)
-    {
-        if(isNumeric(args[0])) { args[i] = parseFloat(args[i]); }
-        else if(args[i] === "True" || args[i] === "False")
-            { args[i] = pythonize(args[i]); }
-        //else if(is a string)
-        else { args[i] = evaluate(args[i]); highlightAgain = true; }
-    }
+    //evaluate the args first; need to highlight again if anything was replaced
+    let highlightAgain = evaluateElements(args);
 
     if(highlightAgain)
     {
@@ -1149,7 +1148,7 @@ function runFunction(functionName, args)
 
 /*
  * if myString is a function call, return a list where the 1st element is the
- *      name of a function and the 2nd is a list of all the arguments
+ *      name of the function and the 2nd is a list of all the arguments
  * returns false otherwise
  */
 function isFunctionCall(myString)
@@ -1166,30 +1165,65 @@ function isFunctionCall(myString)
     let inParentheses = extractOutermostParentheses(fromParentheses);
     if(!(fromParentheses === inParentheses)) { return false; }
 
+    //check that it's actually something that could be a function name
     let functionName = myString.substring(0, startIndex).trim();
     if(!functionName.match(/^[0-9a-z_]+$/i)) { return false; }
 
-    let args = [];
     inParentheses = inParentheses.substring(1, inParentheses.length - 1);
     let inParenthesesNoL = withoutStringL.substring(
                               startIndex+1, withoutStringL.length - 1);
+
+    //parse the args and put them in an array
+    let args = getElements(inParentheses, inParenthesesNoL);
+
+    return [functionName, args];
+}
+
+/*
+ * replace the string values with the values they evaluate to
+ * args - array of strings, each represents a value or expression
+ * return true if anything was evaluated, false if not
+ */
+function evaluateElements(args)
+{
+    let highlightAgain = false;
+    //evaluate all of the elements first
+    for(let i = 0; i < args.length; i++)
+    {
+        if(isNumeric(args[i])) { args[i] = parseFloat(args[i]); }
+        else if(args[i] === "True" || args[i] === "False")
+            { args[i] = pythonize(args[i]); }
+        //else if(is a string)
+        else { args[i] = evaluate(args[i]); highlightAgain = true; }
+    }
+    return highlightAgain;
+}
+
+/*
+ * return a list containing the parsed elements
+ * inside - comma-separated string of elements, not enclosed in () or []
+ * insideNoL - same as `inside`, but with string literals as -
+ */
+function getElements(inside, insideNoL)
+{
+    let args = [];
     let i = 0;
 
-    //get the arguments and add them to the array
-    while(i < inParentheses.length)
+    //get the elements and add them to the array
+    while(i < inside.length)
     {
-        if(inParentheses[i] === " ") { i++; continue; }
+        if(inside[i] === " ") { i++; continue; }
         let startIndex = i;
 
         //continue until it finds a comma
-        while(i < inParentheses.length && !(inParenthesesNoL[i] === ",")) { i++; }
+        while(i < inside.length && !(insideNoL[i] === ",")) { i++; }
 
-        args.push(inParentheses.substring(startIndex, i).trim()); //add arg to array
+        args.push(inside.substring(startIndex, i).trim()); //add arg to array
 
         i++;
     }
 
-    return [functionName, args];
+    return args;
 }
 
 function runBuiltInFunction(functionName, args)
@@ -1214,6 +1248,56 @@ function runBuiltInFunction(functionName, args)
         for(let i = 0; i < args.length; i++) { total += args[i]; }
         return total;
     }
+}
+
+/*
+ * parse + evaluate elements in list, add list to heap and show on screen
+ * return an array where the address of the list is its only element
+ */
+function createList(elementsString)
+{
+    //elements inside []
+    let inside = elementsString.substring(1, elementsString.length-1);
+    let insideNoL = removeStringLiterals(inside);
+
+    //parse string and get array of elements
+    let elementsArray = getElements(inside, insideNoL);
+
+    let goodSpacing = "[" + elementsArray.join(", ") + "]";
+    if(!(elementsString === goodSpacing)) //ensure good spacing
+    {
+        counter++;
+        setTimeout(replaceValueOnLine, counter * TIMEINTERVAL,
+                           elementsString, goodSpacing, stackFrameIndex);
+    }
+
+    //evaluate/replace elements in list if needed
+    let highlightAgain = evaluateElements(elementsArray);
+    let highlight = "[" + elementsArray.map(pythonize).join(", ") + "]";
+
+    if(highlightAgain) //something was replaced, highlight the whole list again
+    {
+        counter++;
+        setTimeout(highlightPortion, counter * TIMEINTERVAL,
+                                  highlight, "line" + stackFrameIndex, "");
+    }
+
+    //assign an address to the list
+    let address = 1;
+    while(address in heap) { address++; }
+
+    //whole array appears on the heap
+    counter++;
+    setTimeout(addList, counter * TIMEINTERVAL, elementsArray, address);
+
+    //replace list literal on line with reference
+    counter++;
+    setTimeout(replaceValueOnLine, counter * TIMEINTERVAL,
+                               highlight, "➞ " + address, stackFrameIndex);
+
+    heap[address] = elementsArray; //add to heap
+    //represent this list w/ an array that contains only its address
+    return [address];
 }
 
 /*
@@ -1269,6 +1353,7 @@ function pythonize(value)
 {
     if(typeof value == "boolean" && value) { return "True"; }
     else if(typeof value == "boolean" && !value) { return "False"; }
+    else if(Array.isArray(value)) { return "➞ " + value[0]; }
     else { return value; }
 }
 
@@ -1590,6 +1675,31 @@ function removeFrame(stackFrameI)
      }
  }
 
+ function addList(list, reference)
+ {
+     let newObject = document.createElement("div");
+     newObject.className = "object";
+     newObject.id = reference + "-ref"
+
+     let string = '<div class="reference"> ' + reference +  ' ➞ </div> ';
+     string += '<div class="scroll_list"> <table class="list"> <tr>';
+
+     for(let i = 0; i < list.length; i++)
+     {
+         if(i == 0) { string += '<td class="element first_element" '; }
+         else { string += '<td class="element" '; }
+
+         string += ('id="' + reference + '-ref-' + i + '">');
+         string += ('<div class="element_index"> ' + i + ' </div>');
+         string += ('<div class="element_value">'+ pythonize(list[i]) +'</div>');
+         string += '</td>'
+     }
+     string += '</tr></table></div>';
+
+     newObject.innerHTML = string;
+     document.getElementById("heap_space").appendChild(newObject);
+ }
+
 /*
  * remove the parentheses around the highlighted expression
  * TODO: only works if there are no spaces between expression and parens
@@ -1634,10 +1744,13 @@ function clearCanvas()
 {
     document.getElementById("global_variables").innerHTML = "";
     document.getElementById("frames_container").innerHTML = "";
+    document.getElementById("heap_space").innerHTML = "";
+    document.getElementById("error").innerHTML = "";
     counter = 0;
     codeLinesList = [];
     variables = {};
     functions = {};
+    heap = {};
 }
 
 //loop harmonic playback, lower volume
