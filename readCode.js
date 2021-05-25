@@ -205,22 +205,21 @@ function runConditional(blocks)
     }
 }
 
-function extractOutermostParentheses(expression)
+function extractOutermostGroup(expression, open, close)
 {
-    let startIndex = expression.indexOf("(");
-    let endIndex = expression.length;
+    let exprNoL = removeStringLiterals(expression);
 
-    //no parentheses, end recursion
-    //if(startIndex == -1) { return expression; }
+    let startIndex = expression.indexOf(open);
+    let endIndex = expression.length;
 
     let numOpening = 1;
     let numClosing = 0;
 
-    //count the number of opening and closing parentheses
+    //count the number of opening and closing symbols
     for(let i = startIndex + 1; i < expression.length; i++)
     {
-        if(expression.charAt(i) === "(") { numOpening++; }
-        else if(expression.charAt(i) === ")") { numClosing++; }
+        if(exprNoL.charAt(i) === open) { numOpening++; }
+        else if(exprNoL.charAt(i) === close) { numClosing++; }
 
         if(numOpening == numClosing)
         {
@@ -230,31 +229,6 @@ function extractOutermostParentheses(expression)
     }
 
     return expression.substring(startIndex, endIndex + 1);
-}
-
-function extractInnermostParentheses(expression)
-{
-    //index of first "(" symbol
-    let startIndex = expression.indexOf("(");
-    let endEndex = expression.length;
-
-    //keep going if we encounter another "(" before the next ")"
-    while(true)
-    {
-        let nextClosingParen = expression.indexOf(")", startIndex);
-        let nextOpeningParen = expression.indexOf("(", startIndex + 1);
-
-        //next ")" doesn't have "(" before it
-        if(nextClosingParen < nextOpeningParen || nextOpeningParen == -1)
-        {
-            endIndex = nextClosingParen;
-            break;
-        }
-
-        startIndex = nextOpeningParen;
-    }
-
-    return expression.substring(startIndex + 1, endIndex);
 }
 
 /*
@@ -270,21 +244,26 @@ function line(currLine)
     let indexOfEquals = 0;
     let assignVariable = false;
     let varName;
+    let maybeIndexing;
     //line contains a singular 'equals' sign
     if((indexOfEquals = removeStringLiterals(currLine).indexOf("=")) != -1
                          && currLine[indexOfEquals + 1] != "=")
     {
-        assignVariable = true;
-
-        //get the name of the variable
-        varName = currLine.substring(0, indexOfEquals).trim()
-                                                 + "-" + stackFrameIndex;
-        //create this new variable if it doesn't already exist here
-        if(!(varName in variables))
+        if((maybeIndexing = isIndexing(currLine.substring(
+                                        0, indexOfEquals).trim())) == false)
         {
-            variables[varName] = 0;
-            counter++;
-            setTimeout(showNewVariable, counter * TIMEINTERVAL, varName);
+            assignVariable = true;
+
+            //get the name of the variable
+            varName = currLine.substring(0, indexOfEquals).trim()
+                                                 + "-" + stackFrameIndex;
+            //create this new variable if it doesn't already exist here
+            if(!(varName in variables))
+            {
+                variables[varName] = 0;
+                counter++;
+                setTimeout(showNewVariable, counter * TIMEINTERVAL, varName);
+            }
         }
 
         //figure out what value we're assigning to the variable
@@ -313,6 +292,7 @@ function line(currLine)
         setTimeout(showVariableValue, counter * TIMEINTERVAL,
                                     varName, pythonize(variables[varName]));
     }
+    else if(maybeIndexing != false) { replaceAtIndex(maybeIndexing, result); }
 
 
 }
@@ -335,7 +315,7 @@ function evaluate(expression)
 
     //unhighlight the parentheses first
     if(expression.charAt(0) === "("
-        && expression === extractOutermostParentheses(expression))
+        && expression === extractOutermostGroup(expression, "(", ")"))
     {
         counter++;
         setTimeout(unhighlightParentheses, counter*TIMEINTERVAL, stackFrameIndex);
@@ -344,6 +324,7 @@ function evaluate(expression)
     }
 
     let maybeFunctionCall = isFunctionCall(expression);
+    let maybeIndexing;
 
     //expression is a single variable
     if(expression + "-" + stackFrameIndex in variables)
@@ -371,9 +352,11 @@ function evaluate(expression)
 
     //check: list
     else if(expression[0] === "[" && expression[expression.length-1] === "]")
-    {
-        result = createList(expression);
-    }
+        { result = createList(expression); }
+
+    //check: indexing
+    else if((maybeIndexing = isIndexing(expression)) != false)
+        { result = doIndexing(maybeIndexing); }
 
     else
     {
@@ -621,7 +604,7 @@ function maybeParseBoolean(expression)
                 if(startsFrom.charAt(j) == "(")
                 {
                     let inParentheses
-                       = extractOutermostParentheses(expression.substring(j));
+                     = extractOutermostGroup(expression.substring(j), "(", ")");
                     //jump to the index after the expression
                     j += (inParentheses.length)
                 }
@@ -756,7 +739,8 @@ function parseExpression(expression)
         //term is in parentheses, push that whole expression
         if(currChar == "(")
         {
-            let inParentheses = extractOutermostParentheses(expression.substring(i));
+            let inParentheses
+                 = extractOutermostGroup(expression.substring(i), "(", ")");
             comp.push(inParentheses);
             //jump to the index after the expression
             i += (inParentheses.length - 1)
@@ -813,8 +797,8 @@ function parseExpression(expression)
             {
                 if(startsFrom[j] === "(") //must be a function call
                 {
-                    j += (extractOutermostParentheses(
-                                       startsFrom.substring(j)).length - 1);
+                    j += (extractOutermostGroup(
+                               startsFrom.substring(j), "(", ")").length - 1);
                 }
                 //at end of term
                 else if(startsFrom[j] === " "
@@ -849,6 +833,7 @@ function getNumericalValue(value)
     let numerical;
     let potentialVarId = value + "-" + stackFrameIndex;
     let maybeFunctionCall;
+    let maybeIndexing;
 
     //value is a variable
     if(potentialVarId in variables)
@@ -859,8 +844,14 @@ function getNumericalValue(value)
         value = variables[potentialVarId];
     }
     else if((maybeFunctionCall = isFunctionCall(value)) != false)
+        { value = runFunction(maybeFunctionCall[0], maybeFunctionCall[1]); }
+    else if((maybeIndexing = isIndexing(value)) != false)
     {
-        value = runFunction(maybeFunctionCall[0], maybeFunctionCall[1]);
+        let newValue = doIndexing(maybeIndexing);
+        counter++;
+        setTimeout(replaceValueOnLine, counter * TIMEINTERVAL,
+                                         value, newValue, stackFrameIndex);
+        value = newValue;
     }
     else { wasNumeric = true; }
 
@@ -979,7 +970,7 @@ function doArithmetic(expression)
 
     //remove the parentheses first
     if(expression.charAt(0) === "("  &&
-               expression === extractOutermostParentheses(expression))
+               expression === extractOutermostGroup(expression, "(", ")"))
     {
         counter++;
         setTimeout(unhighlightParentheses, counter*TIMEINTERVAL, stackFrameIndex);
@@ -1162,7 +1153,7 @@ function isFunctionCall(myString)
 
     //compare string lengths, should be equal if it's a function call
     let fromParentheses = myString.substring(startIndex);
-    let inParentheses = extractOutermostParentheses(fromParentheses);
+    let inParentheses = extractOutermostGroup(fromParentheses, "(", ")");
     if(!(fromParentheses === inParentheses)) { return false; }
 
     //check that it's actually something that could be a function name
@@ -1286,9 +1277,14 @@ function createList(elementsString)
     let address = 1;
     while(address in heap) { address++; }
 
+    //deep copy before passing as argument to addList
+    let elementsArrayCopy = [];
+    for(let i = 0; i < elementsArray.length; i++)
+        { elementsArrayCopy.push(elementsArray[i]); }
+
     //whole array appears on the heap
     counter++;
-    setTimeout(addList, counter * TIMEINTERVAL, elementsArray, address);
+    setTimeout(addList, counter * TIMEINTERVAL, elementsArrayCopy, address);
 
     //replace list literal on line with reference
     counter++;
@@ -1301,7 +1297,54 @@ function createList(elementsString)
 }
 
 /*
- * if code contains any string literals, replace their characters with "-"
+ * returns false if not an indexing operation
+ * returns list with the thing to index and the index to index if it is
+ */
+function isIndexing(expression)
+{
+    let startIndex;
+    if((startIndex = expression.indexOf("[")) == -1) { return false; }
+
+    let squareBrackets = extractOutermostGroup(expression, "[", "]");
+    if(squareBrackets[squareBrackets.length-1] !== "]") { return false; }
+    let inside = squareBrackets.substring(1, squareBrackets.length-1);
+    let potentialVarName = expression.substring(0, startIndex);
+
+    if(potentialVarName + squareBrackets !== expression) { return false; }
+    else { return [potentialVarName, inside]; }
+}
+
+/*
+ * return the value of the element at the index
+ */
+function doIndexing(maybeIndexing)
+{
+    let varId = maybeIndexing[0] + "-" + stackFrameIndex;
+    let index = javascriptize(maybeIndexing[1]);
+
+    if(Array.isArray(variables[varId])) //array indexing
+        { return heap[variables[varId][0]][index]; }
+    //string indexing
+    else { return variables[varId][index]; }
+}
+
+/*
+ *
+ */
+ function replaceAtIndex(indexing, value)
+ {
+     let varId = indexing[0] + "-" + stackFrameIndex;
+     let index = javascriptize(indexing[1]);
+     let reference = variables[varId][0];
+     heap[reference][index] = value;
+
+     //show update on screen
+     counter++;
+     setTimeout(updateList, counter * TIMEINTERVAL, reference, index, value);
+ }
+
+/*
+ * if code contains any string literals, replace their characters with "_"
  */
 function removeStringLiterals(code)
 {
@@ -1355,6 +1398,17 @@ function pythonize(value)
     else if(typeof value == "boolean" && !value) { return "False"; }
     else if(Array.isArray(value)) { return "➞ " + value[0]; }
     else { return value; }
+}
+
+/*
+ * get value in Javascript format
+ */
+function javascriptize(value)
+{
+    if(isNumeric(value)) { return parseFloat(value); }
+    else if(value === "True") { return true;}
+    else if(value === "False") { return false;}
+    //else if(is a string){}
 }
 
 /*
@@ -1434,6 +1488,12 @@ function showNewVariable(varId)
 
     document.getElementById(appendTo).appendChild(newVarArea);
     document.getElementById("newVarSound").play();
+}
+
+function updateList(reference, index, value)
+{
+    let indexSpace = document.getElementById(reference + "-ref-" + index);
+    indexSpace.children[1].innerHTML = pythonize(value);
 }
 
 /*
