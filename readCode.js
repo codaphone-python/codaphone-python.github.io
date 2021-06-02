@@ -199,9 +199,10 @@ function runConditional(blocks)
     {
         conditionalCounter = -1;
 
-        //show else block header on screen
+        //show else block header on screen, play sound
         counter++;
         setTimeout(showCurrLine, counter*TIMEINTERVAL, "else:", stackFrameIndex);
+        setTimeout(playConditionalSound, counter*TIMEINTERVAL, conditionalCounter);
 
         runBlock(blocks[blocks.length-1]["lines"]);
         return;
@@ -213,6 +214,8 @@ function runWhile(block)
     //get the header and the condition
     let whileHeader = block["header"];
     let whileCondition = whileHeader.substring(6, whileHeader.indexOf(":"));
+
+    console.log(whileCondition)
 
 
     //show 'while' header on screen, play sound
@@ -271,7 +274,7 @@ function line(currLine)
     let indexOfEquals = 0;
     let assignVariable = false;
     let varName;
-    let maybeIndexing;
+    let maybeIndexing = false;
     //line contains a singular 'equals' sign
     if((indexOfEquals = removeStringLiterals(currLine).indexOf("=")) != -1
                          && currLine[indexOfEquals + 1] != "=")
@@ -346,14 +349,18 @@ function evaluate(expression)
 
     let maybeFunctionCall = isFunctionCall(expression);
     let maybeIndexing;
+    let maybeID = expression + "-" + stackFrameIndex;
 
     //expression is a single variable
-    if(expression + "-" + stackFrameIndex in variables)
+    if(maybeID in variables)
     {
-        result = variables[expression + "-" + stackFrameIndex];
+        result = variables[maybeID];
+        counter++;
+        setTimeout(highlightVarValue, counter * TIMEINTERVAL, maybeID);
         counter++;
         setTimeout(replaceValueOnLine, counter * TIMEINTERVAL,
                              expression, pythonize(result), stackFrameIndex);
+        setTimeout(playVarToValueSound, counter * TIMEINTERVAL);
     }
 
     //check: single numerical value
@@ -899,8 +906,11 @@ function getNumericalValue(value)
     if(potentialVarId in variables)
     {
         counter++;
+        setTimeout(highlightVarValue, counter * TIMEINTERVAL, potentialVarId);
+        counter++;
         setTimeout(replaceValueOnLine, counter * TIMEINTERVAL,
                 value, pythonize(variables[potentialVarId]), stackFrameIndex);
+        setTimeout(playVarToValueSound, counter * TIMEINTERVAL);
         value = variables[potentialVarId];
     }
     else if((maybeFunctionCall = isFunctionCall(value)) != false)
@@ -1261,7 +1271,7 @@ function evaluateElements(args)
     {
         if(isNumeric(args[i])) { args[i] = parseFloat(args[i]); }
         else if(args[i] === "True" || args[i] === "False")
-            { args[i] = pythonize(args[i]); }
+            { args[i] = javascriptize(args[i]); }
         else if(isString(args[i]))
             { args[i] = stringValue(args[i]); }
         else { args[i] = evaluate(args[i]); highlightAgain = true; }
@@ -1309,7 +1319,12 @@ function runBuiltInFunction(functionName, args)
     else if(functionName === "max") { return Math.max(...args); }
     else if(functionName === "min") { return Math.min(...args); }
     else if(functionName === "pow") { return Math.pow(args[0], args[1]); }
-    else if(functionName === "print") {}
+    else if(functionName === "print")
+    {
+        let stringValue = args[0] + "";
+        counter++;
+        setTimeout(printOutput, counter * TIMEINTERVAL, stringValue);
+    }
     else if(functionName === "range") {}
     else if(functionName === "str") {}
     else if(functionName === "sum")
@@ -1486,9 +1501,9 @@ function pythonize(value)
  */
 function javascriptize(value)
 {
-    if(isNumeric(value)) { return parseFloat(value); }
-    else if(value === "True") { return true;}
+    if(value === "True") { return true;}
     else if(value === "False") { return false;}
+    else if(isNumeric(value)) { return parseFloat(value); }
     else if(isString(value)){ return stringValue(value); }
 }
 
@@ -1540,6 +1555,7 @@ function playBooleanResultSound(result)
           let soundString = "elif" + conditionalCounter + "Sound";
           document.getElementById(soundString).play();
       }
+      else { document.getElementById("elseSound").play(); }
  }
 
  function playEvaluateBoolSound() { document.getElementById("boolean").play(); }
@@ -1549,6 +1565,7 @@ function playBooleanResultSound(result)
      { document.getElementById("harmonic" + (stackFrameI + 1)).play(); }
  function pauseHarmonic(stackFrameI)
      { document.getElementById("harmonic" + (stackFrameI + 1)).pause(); }
+ function playVarToValueSound() { document.getElementById("varToValue").play(); }
 
 /*
  * show new variable on screen
@@ -1600,9 +1617,6 @@ function highlightPortion(portion, id, comesAfter)
     portion = portion.replace("<", "&lt;");
     portion = portion.replace(">", "&gt;");
 
-    console.log(portion, id, comesAfter)
-    console.log("curr_line", line)
-
     let startIndex = line.indexOf(portion);
     if(startIndex == -1) { return; }
 
@@ -1649,6 +1663,24 @@ function clearHighlight(id)
 
     document.getElementById(id).innerHTML = part1 + part2 + part3;
 }
+
+/*
+ * highlight the value of the variable in memory, unhighlight it 2 ticks later
+ */
+function highlightVarValue(varId)
+{
+    //strings that represent span
+    let divOpen = "<span class=\"highlight\">";
+    let divClose = "</span>";
+    let varValue = document.getElementById(varId).innerHTML;
+    document.getElementById(varId).innerHTML = divOpen + varValue + divClose;
+    document.getElementById("grabVarValue").play();
+
+    setTimeout(unhighlightVarValue, TIMEINTERVAL * 2, varId, varValue);
+}
+
+function unhighlightVarValue(varId, value)
+    { document.getElementById(varId).innerHTML = value; }
 
 /*
  * replace the old value with the new value on the current line
@@ -1886,6 +1918,14 @@ function unhighlightParentheses(stackFrameI)
     let oldStr = spanOpen + "(" + highlighted + ")" + spanClose;
     document.getElementById("line" + stackFrameI).innerHTML
                                         = line.replace(oldStr, newStr);
+}
+
+function printOutput(string)
+{
+    let newVarArea = document.createElement("p");
+    newVarArea.innerHTML = string;
+    document.getElementById("output").appendChild(newVarArea);
+    //document.getElementById("newVarSound").play();
 }
 
 function clearCanvas()

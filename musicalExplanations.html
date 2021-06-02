@@ -1,0 +1,59 @@
+<html>
+<head>
+  <title> Musical Explanations | Codaphone </title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="shortcut icon" type="image/png" href="icon.png"/>
+</head>
+<body>
+  <div id="heading">
+    <h1>C O D A P H O N E
+      <span class="subheading"> ➞ Auditory <br> ➞ representations <br> ➞ of programs </span>
+    </h1>
+  </div>
+
+  <div id="nav_bar">
+    <button type="button" class="menu">  </button>
+  </div>
+
+  <div id="writing">
+    Welcome to the "musical explanations page". I'm definitely not done writing yet and am planning on adding
+    some better descriptions. This is currently just a very brief overview. Check back here in the future for more.
+
+    <p style="margin-top: 2em;"> Musical Model for Conditionals </p>
+
+    <ul>
+    <li>
+    When a have a group of conditional statements, the `if` statement condition is evaluated first. If that condition
+    isn’t true, then it moves to the `elif/else` statements. </li>
+
+    <li>
+    Each time we evaluate a condition, a musical motif is played. As we move through the list of conditionals, the
+    musical motif modulates up by a perfect 4th. The decision about that interval was somewhat arbitrary, somewhat
+    not. I figured that I couldn’t just pick a completely random interval because that might sound terrible. I decided
+    on perfect 4ths because the current key signature will only differ by 1 accidental (because they’re adjacent on
+    the Circle of Fifths/Fourths). </li>
+
+    <li>
+    The motif ends on a minor 7th scale degree, and it’s meant to sound “unresolved”, as we haven’t found a
+    condition that’s true yet. The modulation parallels an increasing sense of anticipation to arrive at a
+    statement that we can execute. </li>
+
+    <li>
+    At `else`, we play a motif that resolves back to the original key and the root, because the condition is
+    now “resolved”, as we have gone through every other condition and have finally arrived at the end. </li>
+    </ul>
+
+    <p style="margin-top: 2em;"> Stack frame harmonics </p>
+    <ul>
+      <li>Each time a new stack frame is added, add a new harmonic to the overall sound</li>
+      <li>When a stack frame is finished and is taken off the stack, remove that harmonic </li>
+      <li>Represents the program in a different area of memory at different points in time: harmonics give the
+    sound a different timbre </li>
+      <li>Harmonics on top of each other are all different notes (parallel: different spaces in higher/lower memory), but together,
+    they are different parts of a single sound (parallel: when there are a lot of stack frames, at any given time, all stack
+    frames below the current one play a part in shaping the execution of the same program)</li>
+    </ul>
+  </div>
+
+</body>
+</html>

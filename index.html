@@ -19,7 +19,7 @@
       <source src="sounds/stamp.wav" type="audio/wav">
     </audio>
     <audio id="arithmetic">
-      <source src="sounds/squeaky_toy.wav" type="audio/wav">
+      <source src="sounds/arithmetic.wav" type="audio/wav">
     </audio>
     <audio id="snap">
       <source src="sounds/snap.wav" type="audio/wav">
@@ -34,13 +34,28 @@
       <source src="sounds/false.wav" type="audio/wav">
     </audio>
     <audio id="ifSound">
-      <source src="sounds/if.wav" type="audio/wav">>
+      <source src="sounds/conditional_statements/if.wav" type="audio/wav">>
     </audio>
     <audio id="elif1Sound">
-      <source src="sounds/elif-1.wav" type="audio/wav">
+      <source src="sounds/conditional_statements/elif-1.wav" type="audio/wav">
     </audio>
     <audio id="elif2Sound">
-      <source src="sounds/elif-2.wav" type="audio/wav">
+      <source src="sounds/conditional_statements/elif-2.wav" type="audio/wav">
+    </audio>
+    <audio id="elif3Sound">
+      <source src="sounds/conditional_statements/elif-3.wav" type="audio/wav">
+    </audio>
+    <audio id="elif4Sound">
+      <source src="sounds/conditional_statements/elif-4.wav" type="audio/wav">
+    </audio>
+    <audio id="elif5Sound">
+      <source src="sounds/conditional_statements/elif-5.wav" type="audio/wav">
+    </audio>
+    <audio id="elif6Sound">
+      <source src="sounds/conditional_statements/elif-6.wav" type="audio/wav">
+    </audio>
+    <audio id="elseSound">
+      <source src="sounds/conditional_statements/else.wav" type="audio/wav">
     </audio>
     <audio id="harmonic1">
       <source src="sounds/harmonics/harmonic1.wav" type="audio/wav">
@@ -59,6 +74,12 @@
     </audio>
     <audio id="harmonic6">
       <source src="sounds/harmonics/harmonic6.wav" type="audio/wav">
+    </audio>
+    <audio id="varToValue">
+      <source src="sounds/var_name_to_value.wav" type="audio/wav">
+    </audio>
+    <audio id="grabVarValue">
+      <source src="sounds/grab_var_value.wav" type="audio/wav">
     </audio>
   </div>
 
@@ -101,6 +122,7 @@ function runit() {
        console.log(err.toString());
        document.getElementById("error").innerHTML = err.toString();
    });
+   mypre.innerHTML = '';
 
 }
 
