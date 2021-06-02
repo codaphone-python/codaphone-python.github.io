@@ -92,6 +92,7 @@ button:hover span:after {
   float: left;
   width: 65.5vw;
   height: 85vh;
+  margin-bottom: 3vh;
 }
 
 #display {
@@ -368,6 +369,95 @@ td.element {
 
 #output {
   min-height: 50px;
+}
+
+#output_area {
+  font-family: "Monaco", "Andale Mono", "PT Mono", monospace;
+  text-shadow: 1px 1px 2px #595959;
+}
+
+h4 {
+  font-weight: normal;
+  font-family: Verdana, 'Geneva', sans-serif;
+  font-size: 2.3vh;
+}
+
+.menu {
+  width: 100%;
+  background: rgba(75, 75, 75, 0.5);
+  border: 0 solid white;
+  color: white;
+  font-size: 2.3vh;
+  font-weight: normal;
+  padding: 1em;
+  box-shadow: 1px 1px 2px #595959;
+  text-shadow: 1px 1px 2px #595959;
+  box-sizing: border-box;
+  border-radius: 5px;
+  margin-bottom: 0.7em;
+  position: relative;
+  transition: right ease 0.5s;
+}
+
+.menu:hover {
+  right: -0.8vw;
+}
+
+.menu:hover :after {
+  right: 0;
+}
+
+#nav_bar {
+  float: left;
+  width: 18vw;
+  margin-right: 3vw;
+}
+
+#writing {
+  float: left;
+  height: 84.5vh;
+  width: 50vw;
+  overflow-y: auto;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 3.3vh;
+  line-height: 1.5em;
+  box-sizing: border-box;
+  color: #555555;
+  text-shadow: 1px 1px 2px rgba(75, 75, 75, 0.25);
+  font-size: 2.2vh;
+  scroll-behavior: smooth;
+}
+
+h3 {
+  margin-top: 5vh;
+  color: white;
+  text-shadow: 1px 1px 3px #595959;
+  font-size: calc(2.2vh + 0.7vw);
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  padding-top: 0.6em;
+}
+
+a {
+  font-weight: bold;
+  color: #555555;
+  text-decoration: none;
+}
+
+footer {
+  font-size: 2vh;
+  text-shadow: 1px 1px 2px rgba(35, 35, 35, 0.75);
+  text-align: center;
+}
+
+footer a {
+  color: inherit;
+  font-weight: inherit;
+}
+
+footer a:hover {
+  text-decoration: underline;
 }
 
 *::-webkit-scrollbar {

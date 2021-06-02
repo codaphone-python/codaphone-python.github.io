@@ -1,0 +1,84 @@
+<html>
+<head>
+  <title> README | Codaphone </title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="shortcut icon" type="image/png" href="icon.png"/>
+</head>
+<body>
+  <div id="heading">
+    <h1>C O D A P H O N E
+      <span class="subheading"> ➞ Auditory <br> ➞ representations <br> ➞ of programs </span>
+    </h1>
+  </div>
+
+  <div id="nav_bar">
+    <a href="#about"> <button type="button" class="menu"> About </button> </a>
+    <a href="#unsupported_features"> <button type="button" class="menu"> Unsupported Features </button> </a>
+    <a href="#known_bugs"> <button type="button" class="menu"> Known Bugs </button> </a>
+  </div>
+
+  <div id="writing">
+    Hi! I’m glad that you stumbled upon my project. Read on for more info!
+
+    <h3 id="about"> A B O U T </h3>
+    <p> Codaphone is my ICAM Senior Project, which I completed to fulfill a 2-quarter-long
+      project sequence required for graduation as an
+      <a href="https://music-cms.ucsd.edu/ugrad/icam-major.html" target="_blank">ICAM major</a>
+      at UC San Diego. </p>
+    <p> The word “Codaphone” is a play on the musical term “coda”, the word “code”, and the Greek
+      root “phon”. In music, a “coda” represents a passage that you play at the end. Seems pretty
+      fitting, as this is the last thing I need to complete to finish my degree! “Code” because
+      the user inputs code, and “phon” (which means "sound") because it makes sounds.
+      (special thanks to Prof Shlomo Dubnov for coming up with this name) </p>
+    <p> Throughout my undergrad, I became fascinated with computer programs and the ways that people
+      understand them. Particularly, it’s really interesting to think about ways to build on people’s
+      mental models of these concepts and represent them in more tangible ways. </p>
+    <p> When people first learn programming, they are often taught to draw diagrams that represent
+      their code. These visually-based models are generally very effective, and I thought that it
+      would be interesting to build off of these models and represent programs using sounds. Ideally,
+      the auditory elements will add to the sensory experience and will be helpful in reinforcing
+      people’s understanding of the code. </p>
+    <p> Even if this doesn’t help with any kind of learning or understanding, it’s still pretty cool
+      to have some sort of piece of “music” that represents the code as it runs! As far as I know,
+      no one else has done that yet. It could be fun to just experiment with different programs to
+      try to make different sounds. </p>
+    <p> If you’re interested, I also wrote a little bit about some of the specific musical reasonings
+      for the sounds that I used. Read about it
+      <a href="" target="_blank">here</a>.
+      Maybe you’ll learn something about music theory! </p>
+
+    <h3 id="unsupported_features"> U N S U P P O R T E D _ F E A T U R E S</h3>
+    <p> Similar to <a href="https://pythontutor.com" target="_blank">Python Tutor</a> (which, to some
+      extent, gave me the idea for this project), Codaphone is
+      not meant to be used for very long or complicated programs. Here are some things that I don’t plan
+      to add functionality for. </p>
+    <ul>
+      <li> Classes and objects </li>
+      <li> Inputs from stdin </li>
+      <li> Importing libraries </li>
+      <li> Functions defined inside functions </li>
+      <li> Function overloading </li>
+      <li> Concatenating strings by placing them next to each other </li>
+    </ul>
+
+    <h3 id="known_bugs"> K N O W N _ B U G S </h3>
+    <p> We will probably continue to find things that can be improved. If you notice something that’s
+      not on this list, you can <a href="https://forms.gle/QfctNzRknjHyqxP39" target="_blank">submit
+        a bug report</a>. These are the ones that I know of that I do hope to fix eventually. </p>
+    <ul>
+      <li> A comment at the end of a line won’t be removed before the evaluation </li>
+      <li> Spaces at the end of a line will mess things up </li>
+      <li> A string literal that contains “\n” will also mess things up </li>
+      <li> for loops not implemented </li>
+      <li> Dictionaries not implemented </li>
+      <li> +=, -=, *=, etc. not implemented </li>
+      <li> List literals inside list literals, list literals as arguments to functions </li>
+      <li> Parsing is incorrect for expressions that contain boolean operators as a substring
+         (ex: x = True and is_stubborn) </li>
+      <li> 1-line conditional statements and loops </li>
+      <li> Returning from a function inside a conditional statement or a loop </li>
+    </ul>
+  </div>
+
+</body>
+</html>

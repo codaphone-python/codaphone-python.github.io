@@ -118,12 +118,12 @@ function runit() {
     <textarea id="yourcode" wrap="off"># insert Python code here</textarea><br />
     <button type="button" onclick="runit(); clearCanvas()"><span>R U N</span></button>
   </form>
-<h4> Output </h4>
-<pre id="output" ></pre>
+  <div id="output_area">
+    <h4> Output </h4>
+    <p id="output" ></p>
 
-<p id="error"></p>
-
-<p id="trial"> </p>
+    <p id="error"></p>
+  </div>
 </div>
 
 <div id="col2">
@@ -160,10 +160,14 @@ function runit() {
           </div>
         </div>
       </div>
+    </div>
 
 <div id="area"></div>
 
-
+<footer>
+  <a href="README.html" target="_blank">README</a> |
+  <a href="https://forms.gle/QfctNzRknjHyqxP39" target="_blank">Bug Report
+</footer>
 
 </body>
 

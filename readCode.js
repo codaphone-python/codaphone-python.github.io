@@ -134,6 +134,9 @@ function runBlock(block)
             functions[components[0]] = [components[1], block[i]["lines"]];
         }
 
+        else if(block[i]["header"].indexOf("while " == 0))
+            { runWhile(block[i]); }
+
         i++;
     }
     return returnValue;
@@ -205,6 +208,30 @@ function runConditional(blocks)
     }
 }
 
+function runWhile(block)
+{
+    //get the header and the condition
+    let whileHeader = block["header"];
+    let whileCondition = whileHeader.substring(6, whileHeader.indexOf(":"));
+
+
+    //show 'while' header on screen, play sound
+    counter++;
+    setTimeout(showCurrLine, counter*TIMEINTERVAL, whileHeader, stackFrameIndex);
+    //setTimeout(playConditionalSound, counter*TIMEINTERVAL, conditionalCounter);
+
+    //evalute the condition, run the block + show condition afterwards
+    while(evaluate(whileCondition.trim()) == true)
+    {
+        runBlock(block["lines"]);
+
+        //show 'while' header on screen, play sound
+        counter++;
+        setTimeout(showCurrLine, counter*TIMEINTERVAL, whileHeader, stackFrameIndex);
+        //setTimeout(playConditionalSound, counter*TIMEINTERVAL, conditionalCounter);
+    }
+}
+
 function extractOutermostGroup(expression, open, close)
 {
     let exprNoL = removeStringLiterals(expression);
@@ -218,7 +245,7 @@ function extractOutermostGroup(expression, open, close)
     //count the number of opening and closing symbols
     for(let i = startIndex + 1; i < expression.length; i++)
     {
-        if(exprNoL.charAt(i) === open) { numOpening++; }
+        if(exprNoL.charAt(i) === open && !(open === close)) { numOpening++; }
         else if(exprNoL.charAt(i) === close) { numClosing++; }
 
         if(numOpening == numClosing)
@@ -271,7 +298,7 @@ function line(currLine)
     }
 
     //value is a string, assign that to the variable
-    if(isString(currLine)) { result = currLine; }
+    if(isString(currLine)) { result = javascriptize(currLine); }
 
     //value is a boolean literal
     else if(currLine === "True" || currLine === "False")
@@ -284,7 +311,7 @@ function line(currLine)
     //value is an expression
     else { result = evaluate(currLine.trim()); }
 
-    if(assignVariable)
+    if(assignVariable) //variable assignment
     {
         variables[varName] = result;
 
@@ -299,12 +326,6 @@ function line(currLine)
 
 function evaluate(expression)
 {
-    //check: starts with # -> skip
-
-    //check: variable assignment
-    //    - take note of variable name
-    //    - get the expression after the =
-
     //highlight the expression to evaluate
     counter++;
     setTimeout(highlightPortion, counter * TIMEINTERVAL,
@@ -334,6 +355,9 @@ function evaluate(expression)
         setTimeout(replaceValueOnLine, counter * TIMEINTERVAL,
                              expression, pythonize(result), stackFrameIndex);
     }
+
+    //check: single numerical value
+    else if(isNumeric(expression)) { result = parseFloat(expression); }
 
     //check: function call
     else if(maybeFunctionCall != false)
@@ -713,12 +737,49 @@ function flattenBooleanExpr(comp)
     return string;
 }
 
+/*
+ * return true if the entire value is a single string literal
+ */
 function isString(potentialString)
 {
-    return (potentialString[0] === "\""
-             && potentialString[potentialString.length - 1] == "\"") ||
-           (potentialString[0] === "\'"
-             && potentialString[potentialString.length - 1] == "\'")
+    let quoteType = potentialString[0]; //either ' or "
+    if(!(quoteType === "\"" || quoteType === "'")) { return false; }
+    potentialString = removeStringLiterals(potentialString);
+    let doubleQuotes = extractOutermostGroup(potentialString, "\"", "\"");
+    let singleQuotes = extractOutermostGroup(potentialString, "\'", "\'");
+
+    if(!(potentialString === doubleQuotes) && quoteType === "\""
+           || !(potentialString === singleQuotes) && quoteType === "\'")
+        { return false; }
+    else { return true; }
+}
+
+/*
+ * return a string with the sequence of characters that are represented
+ * input should still be enclosed in quotes
+ */
+function stringValue(myString)
+{
+    let result = "";
+    myString = myString.substring(1, myString.length-1);
+    let escapePrev = false;
+
+    for(let i = 0; i < myString.length; i++)
+    {
+        //result character, add to result
+        if(!escapePrev && !(myString[i] === "\\")) { result += myString[i]; }
+        else if(escapePrev)
+        {
+            if(myString[i] === "n") { result += "\n"; }
+            else if(myString[i] === "t") { result += "\t"; }
+            else if(myString[i] === "'") { result += "'"; }
+            else if(myString[i] === "\"") { result += "\""; }
+            else if(myString[i] === "\\") { result += "\\"; }
+            escapePrev = false;
+        }
+        else if(myString[i] === "\\") { escapePrev = true; } //escape for next char
+    }
+    return result;
 }
 
 /*
@@ -824,13 +885,12 @@ function parseExpression(expression)
 }
 
 /*
- * return numerical value of the input string
- * return the value stored in the variable, if it's a variable
+ * return numerical value of the input string, or the string if it is
+ *    supposed to be a string
  */
 function getNumericalValue(value)
 {
     let wasNumeric = false;
-    let numerical;
     let potentialVarId = value + "-" + stackFrameIndex;
     let maybeFunctionCall;
     let maybeIndexing;
@@ -840,7 +900,7 @@ function getNumericalValue(value)
     {
         counter++;
         setTimeout(replaceValueOnLine, counter * TIMEINTERVAL,
-                        value, variables[potentialVarId], stackFrameIndex);
+                value, pythonize(variables[potentialVarId]), stackFrameIndex);
         value = variables[potentialVarId];
     }
     else if((maybeFunctionCall = isFunctionCall(value)) != false)
@@ -850,17 +910,14 @@ function getNumericalValue(value)
         let newValue = doIndexing(maybeIndexing);
         counter++;
         setTimeout(replaceValueOnLine, counter * TIMEINTERVAL,
-                                         value, newValue, stackFrameIndex);
+                                     value, newValue, stackFrameIndex);
         value = newValue;
     }
     else { wasNumeric = true; }
 
-    numerical = parseFloat(value); //numerical value of this expression
-
-    //expression is NaN and is not a variable
-    if(numerical != numerical) { return false; }
-
-    return numerical;
+    //numerical value of this expression
+    if(isNumeric(value)) { value = parseFloat(value); }
+    return value;
 }
 
 /*
@@ -880,17 +937,16 @@ function calculateExpression(term1, operator, term2, soFar)
 
     let highlightEach = true;
 
-    let nt1;
-    let nt2;
+    let nt1; let nt2;
+    let nt1quote; let nt2quote;
 
-    //determine if both terms are already numerical or not
+    //both terms are already numerical or not, or it's a string operation
     if((typeof term1 === "number" ||
-           (typeof term1 === "string" && isNumeric(term1)))
-       && (typeof term2 === "number" ||
-           (typeof term2 === "string" && isNumeric(term2))))
-    {
-        highlightEach = false;
-    }
+               (typeof term1 === "string" && isNumeric(term1)))
+           && (typeof term2 === "number" ||
+               (typeof term2 === "string" && isNumeric(term2)))
+      || typeof term1 === "string" && isString(term1))
+          { highlightEach = false; }
 
     let rehighlightLater = highlightEach;
 
@@ -910,7 +966,10 @@ function calculateExpression(term1, operator, term2, soFar)
         counter++;
         setTimeout(removeParentheses, counter * TIMEINTERVAL, stackFrameIndex);
     }
-    else { nt1 = getNumericalValue(term1); } //get first term's numerical value
+    //term1 is a string
+    else if(isString(term1)) { nt1 = stringValue(term1); nt1quote = term1[0]; }
+    //get first term's numerical value
+    else { nt1 = getNumericalValue(term1); nt1quote = "'"; }
 
     soFar += (" " + nt1); //update what should be on the screen so far
 
@@ -938,9 +997,16 @@ function calculateExpression(term1, operator, term2, soFar)
         counter++;
         setTimeout(removeParentheses, counter * TIMEINTERVAL, stackFrameIndex);
     }
-    else { nt2 = getNumericalValue(term2); } //get second term's numerical value
+    //term2 is a string
+    else if(isString(term2)) { nt2 = stringValue(term2); nt2quote = term2[0]; }
+    //get second term's numerical value
+    else { nt2 = getNumericalValue(term2); nt2quote = "'"; }
 
-    let exprNow = nt1 + " " + operator + " " + nt2;
+    let now1 = nt1; let now2 = nt2;
+    if(typeof now1 === "string") { now1 = nt1quote + now1 + nt1quote; }
+    if(typeof now2 === "string") { now2 = nt2quote + now2 + nt2quote; }
+
+    let exprNow = now1 + " " + operator + " " + now2;
 
     if(rehighlightLater) //highlight the whole expression, if needed
     {
@@ -949,13 +1015,23 @@ function calculateExpression(term1, operator, term2, soFar)
                                     exprNow, "line" + stackFrameIndex, "");
     }
 
-    if(operator === "**") { return [nt1 ** nt2, exprNow]; }
-    else if(operator === "*") { return [nt1 * nt2, exprNow]; }
-    else if(operator === "/") { return [nt1 / nt2, exprNow]; }
-    else if(operator === "//") { return [Math.floor(nt1 / nt2), exprNow]; }
-    else if(operator === "%") { return [nt1 % nt2, exprNow]; }
-    else if(operator === "+") { return [nt1 + nt2, exprNow]; }
-    else if(operator === "-") { return [nt1 - nt2, exprNow]; }
+    let result;
+
+    if(typeof nt1 === "string" && operator === "*")
+    {
+        let buildString = "";
+        for(let i = 0; i < nt2; i++) { buildString += nt1; }
+        result = buildString;
+    }
+    else if(operator === "**") { result = nt1 ** nt2; }
+    else if(operator === "*") { result = nt1 * nt2; }
+    else if(operator === "/") { result = nt1 / nt2; }
+    else if(operator === "//") { result = Math.floor(nt1 / nt2); }
+    else if(operator === "%") { result = nt1 % nt2; }
+    else if(operator === "+") { result = nt1 + nt2; }
+    else if(operator === "-") { result = nt1 - nt2; }
+
+    return [result, exprNow];
 }
 
 /*
@@ -1034,7 +1110,7 @@ function doArithmetic(expression)
             counter++;
             setTimeout(playSnapSound, counter * TIMEINTERVAL);
             setTimeout(replaceValueOnLine, counter * TIMEINTERVAL,
-                                         currExpr, numResult, stackFrameIndex);
+                              currExpr, pythonize(numResult), stackFrameIndex);
 
             //replace array with the calculated value
             components[j-1] = numResult;
@@ -1122,11 +1198,13 @@ function runFunction(functionName, args)
                         pythonize(returnValue), stackFrameIndex-notBuiltIn);
     }
 
-    //remove stack frame and line
-    counter++;
-    setTimeout(removeFrame, counter * TIMEINTERVAL, stackFrameIndex);
-
-    if(notBuiltIn) { stackFrameIndex--; }
+    if(notBuiltIn)
+    {
+        //remove stack frame and line
+        counter++;
+        setTimeout(removeFrame, counter * TIMEINTERVAL, stackFrameIndex);
+        stackFrameIndex--;
+    }
 
     if(stackFrameIndex > 1) //remove the space left by the previous stack frame
     {
@@ -1184,7 +1262,8 @@ function evaluateElements(args)
         if(isNumeric(args[i])) { args[i] = parseFloat(args[i]); }
         else if(args[i] === "True" || args[i] === "False")
             { args[i] = pythonize(args[i]); }
-        //else if(is a string)
+        else if(isString(args[i]))
+            { args[i] = stringValue(args[i]); }
         else { args[i] = evaluate(args[i]); highlightAgain = true; }
     }
     return highlightAgain;
@@ -1396,7 +1475,9 @@ function pythonize(value)
 {
     if(typeof value == "boolean" && value) { return "True"; }
     else if(typeof value == "boolean" && !value) { return "False"; }
+    else if(typeof value == "number") { return value; }
     else if(Array.isArray(value)) { return "➞ " + value[0]; }
+    else if(typeof value == "string") { return "'" + value + "'"; }
     else { return value; }
 }
 
@@ -1408,7 +1489,7 @@ function javascriptize(value)
     if(isNumeric(value)) { return parseFloat(value); }
     else if(value === "True") { return true;}
     else if(value === "False") { return false;}
-    //else if(is a string){}
+    else if(isString(value)){ return stringValue(value); }
 }
 
 /*
@@ -1507,13 +1588,20 @@ function highlightPortion(portion, id, comesAfter)
 
     //get the entire line that's currently being shown
     let line = document.getElementById(id).innerHTML;
-    let prefix = "";
+    let indexOfEquals = removeStringLiterals(line).indexOf("=");
+    if(indexOfEquals != -1 && (line[indexOfEquals-1] === ";"
+         || line[indexOfEquals+1] === "=")) { indexOfEquals = -1; }
+    let prefix = line.substring(0, indexOfEquals);
+    line = line.substring(indexOfEquals);
 
-    prefix = line.substring(0, line.indexOf(comesAfter) + comesAfter.length);
+    prefix += line.substring(0, line.indexOf(comesAfter) + comesAfter.length);
     line = line.substring(line.indexOf(comesAfter) + comesAfter.length);
 
     portion = portion.replace("<", "&lt;");
     portion = portion.replace(">", "&gt;");
+
+    console.log(portion, id, comesAfter)
+    console.log("curr_line", line)
 
     let startIndex = line.indexOf(portion);
     if(startIndex == -1) { return; }
@@ -1569,7 +1657,7 @@ function replaceValueOnLine(oldStr, newStr, stackFrameI)
 {
     //get the entire line that's currently being shown
     let line = document.getElementById("line" + stackFrameI).innerHTML;
-    let indexOfEquals = removeStringLiterals(line).indexOf("=")
+    let indexOfEquals = removeStringLiterals(line).indexOf("=");
     let prefix = line.substring(0, indexOfEquals);
     line = line.substring(indexOfEquals);
 
@@ -1653,7 +1741,7 @@ function addFrame(functionName, params, args, stackFrameI)
     let lineContents = "";
     for(let i = 0; i < params.length; i++)
     {
-        lineContents += (params[i] + " = " + args[i]);
+        lineContents += (params[i] + " = " + pythonize(args[i]));
         if(i < params.length-1) { lineContents += ", " };
     }
     let currentLines = document.getElementById("lines_container").innerHTML;
