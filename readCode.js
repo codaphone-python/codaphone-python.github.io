@@ -29,7 +29,7 @@ function getCode()
  */
 function runLines()
 {
-    makeBlocks();
+    makeBlocks(codeLinesList);
     initializeHarmonics();
     document.getElementById("harmonic1").play();
     runBlock(codeLinesList);
@@ -39,47 +39,75 @@ function runLines()
 
 /*
  * structure codeLinesList for blocks
- * TODO: 1-line if statements/loops
  */
-function makeBlocks()
-{
-    let i = 0;
+ function makeBlocks(currBlock)
+ {
+     let i = 0;
 
-    while(i < codeLinesList.length)
-    {
-        let beginning = codeLinesList[i].substring(0, 4);
+     while(i < currBlock.length)
+     {
+         let line = currBlock[i];
 
-        //header for a block
-        if(beginning === "for " || beginning === "whil" || beginning === "def "
-            || beginning.substring(0,3) === "if " || beginning === "elif"
-            || beginning === "else")
-        {
-            let newHashmap = {"header": codeLinesList[i], "lines": []};
-            i++;
+         //header for a block
+         if(line.indexOf("while ") == 0 || line.indexOf("for ") == 0
+                 || line.indexOf("def ") == 0 || line.indexOf("if ") == 0
+                 || line.indexOf("elif ") == 0 || line.indexOf("else:") == 0)
+         {
+             let newHashmap = {"header": currBlock[i], "lines": []};
+             i++;
 
-            //size of indentation
-            let indentation = codeLinesList[i].length
-                                        - codeLinesList[i].trim().length;
+             //line is empty or is a comment
+             while(i < currBlock.length && skipLine(currBlock[i]))
+                 { currBlock.splice(i, 1); }
 
-            let indentationString = " ".repeat(indentation);
+             let indentationChar, indentation, indentationString;
+             //indentation stuff
+             if(i < currBlock.length)
+             {
+                 indentationChar = currBlock[i][0];
+                 indentation = currBlock[i].length
+                                        - currBlock[i].trimStart().length;
+                 indentationString = indentationChar.repeat(indentation);
+             }
 
-            //add each indented line to the block's list
-            while(i < codeLinesList.length
-               && codeLinesList[i].substring(0, indentation) === indentationString)
-            {
-                newHashmap["lines"].push(codeLinesList[i].substring(indentation));
-                codeLinesList.splice(i, 1);
-            }
+             //add each indented line to the block's list
+             while(i < currBlock.length && indentation > 0
+               && currBlock[i].substring(0, indentation) === indentationString)
+             {
+                 let toPush = currBlock[i].substring(indentation).trimEnd();
+                 newHashmap["lines"].push(toPush);
+                 currBlock.splice(i, 1);
+                 //skip + remove empty lines and comment lines
+                 while(i < currBlock.length && skipLine(currBlock[i]))
+                     { currBlock.splice(i, 1); }
+             }
 
-            i--;
-            codeLinesList[i] = newHashmap;
-        }
-        i++;
-    }
-}
+             //must be a 1-line statement
+             if(newHashmap["lines"].length == 0)
+             {
+                 let header = newHashmap["header"];
+                 let splitFrom = removeStringLiterals(header).indexOf(":") + 1;
+                 newHashmap["lines"].push(header.substring(splitFrom).trim());
+                 newHashmap["header"] = header.substring(0, splitFrom);
+             }
+
+             i--;
+             currBlock[i] = newHashmap;
+             makeBlocks(currBlock[i]["lines"]); //blocks for inner block
+         }
+         i++;
+     }
+     return currBlock;
+ }
 
 /*
- * run the current block of code, whose lines are in the `array` block
+ * return true if this line should be ignored in the grand scheme of things
+ */
+ function skipLine(line)
+    { return line.trim() === "" || line.trim()[0] === "#"; }
+
+/*
+ * run the current block of code, whose lines are in the array `block`
  */
 function runBlock(block)
 {
@@ -1173,10 +1201,13 @@ function runFunction(functionName, args)
                          functions[functionName][0], args, stackFrameIndex);
 
         //show the values of the parameters
-        counter++;
-        setTimeout(setParameters, counter * TIMEINTERVAL,
+        if(args.length > 0)
+        {
+            counter++;
+            setTimeout(setParameters, counter * TIMEINTERVAL,
                          functions[functionName][0], args, stackFrameIndex);
-        counter += 2;
+            counter += 2;
+        }
 
         let functionVars = [];
         //create variables for parameters and assign arg values
