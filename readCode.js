@@ -320,7 +320,7 @@ function line(currLine)
             {
                 variables[varName] = 0;
                 counter++;
-                setTimeout(showNewVariable, counter * TIMEINTERVAL, varName);
+                setTimeout(showNewVariable, counter*TIMEINTERVAL, varName, false);
             }
         }
 
@@ -333,7 +333,7 @@ function line(currLine)
 
     //value is a boolean literal
     else if(currLine === "True" || currLine === "False")
-        { result = pythonize(currLine); }
+        { result = javascriptize(currLine); }
 
     //value is a return statement
     else if(currLine.indexOf("return ") == 0)
@@ -597,7 +597,7 @@ function getBooleanValue(term1, operator, term2, soFar)
 
     let expressionNow = pythonize(term1Value) + " "
                               + operator + " " + pythonize(term2Value);
-    if(operator === "not") { expressionNow = expressionNow.substring(1); }
+    if(operator === "not") { expressionNow = expressionNow.substring(3); }
 
     //one (or both) of the terms was evaluated, rehighlight this expression
     if(rehighlight)
@@ -1601,7 +1601,7 @@ function playBooleanResultSound(result)
 /*
  * show new variable on screen
  */
-function showNewVariable(varId)
+function showNewVariable(varId, isParam)
 {
     let varLocation = parseFloat(varId.substring(varId.indexOf("-") + 1));
     let varName = varId.substring(0, varId.indexOf("-"));
@@ -1609,7 +1609,8 @@ function showNewVariable(varId)
     let newVarArea = document.createElement("div");
     newVarArea.innerHTML = "<div class=\"variable_name\">" + varName
        + "</div> <div class=\"variable_box\" id=\"" + varId + "\"></div>";
-    newVarArea.className = "variable";
+    if(isParam) { newVarArea.className = "variable param"; }
+    else { newVarArea.className = "variable"; }
 
     let appendTo;
     if(varLocation > 0) { appendTo = "stack_frame_" + varLocation; }
@@ -1627,8 +1628,6 @@ function updateList(reference, index, value)
 
 /*
  * highlight a portion of the line that's currently running
- * return the html to put in div with id #current_line
- * TODO: multiple of the same expression on the same line
  */
 function highlightPortion(portion, id, comesAfter)
 {
@@ -1831,7 +1830,7 @@ function setParameters(params, args, stackFrameI)
     //show params on stack and build string to replace / replace with
     for(let i = 0; i < params.length; i++)
     {
-        showNewVariable(params[i] + "-" + stackFrameI);
+        showNewVariable(params[i] + "-" + stackFrameI, true);
         withHighlight += (params[i] + " = " + spanOpen
                                   + pythonize(args[i]) + spanClose);
         if(i < params.length-1){ withHighlight += ", "; }

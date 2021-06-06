@@ -168,6 +168,15 @@ button:hover span:after {
   box-shadow: 1px 1.5px 1px #4f4f4f;
 }
 
+.param .variable_name {
+  color: #f5decc;
+}
+
+.param .variable_box {
+  color: #f5decc;
+  border-color: #f5decc;
+}
+
 #heap {
   float: left;
   width: calc(50.5% - 0.7vh);
