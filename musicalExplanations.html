@@ -5,6 +5,27 @@
   <link rel="shortcut icon" type="image/png" href="icon.png"/>
 </head>
 <body>
+  <script>
+    function playSound(id)
+    {
+      document.getElementById(id).play();
+    }
+  </script>
+  <audio id="conditionalMotif">
+    <source src="musicalExplanations/sounds/dom7.wav" type="audio/wav">
+  </audio>
+  <audio id="majorChord">
+    <source src="musicalExplanations/sounds/major.wav" type="audio/wav">
+  </audio>
+  <audio id="resolve">
+    <source src="musicalExplanations/sounds/resolve.wav" type="audio/wav">
+  </audio>
+  <audio id="modulate4th">
+    <source src="musicalExplanations/sounds/modulate4th.wav" type="audio/wav">
+  </audio>
+  <audio id="resolveElse">
+    <source src="musicalExplanations/sounds/resolveElse.wav" type="audio/wav">
+  </audio>
   <div id="heading">
     <h1>C O D A P H O N E
       <span class="subheading"> ➞ Auditory <br> ➞ representations <br> ➞ of programs </span>
@@ -12,47 +33,118 @@
   </div>
 
   <div id="nav_bar">
-    <button type="button" class="menu">  </button>
+    <a href="#conditionals"> <button type="button" class="menu"> Conditionals </button> </a>
+    <a href="#stackFrames"> <button type="button" class="menu"> Stack Frames </button> </a>
   </div>
 
   <div id="writing">
-    Welcome to the "musical explanations page". I'm definitely not done writing yet and am planning on adding
-    some better descriptions. This is currently just a very brief overview. Check back here in the future for more.
+    These are some of the things I thought about while coming up with musical models
+    for the different concepts. If I didn't write about it here, it's either because the end
+    result is pretty self-explanatory, or more likely because it was arbitrary. Lots of
+    things can't logically be sonified, so the sounds that I chose came from random
+    things that I tried that sounded good.
 
-    <p style="margin-top: 2em;"> Musical Model for Conditionals </p>
+    <h3 id="conditionals"> C O N D I T I O N A L S </h3>
+    <p> When we have a group of conditional statements, the condition of the `if` statement
+      is evaluated first. If that condition is not true, then the condition for each subsequent
+      `elif` statement (if there are any) is evaluated until one of them evaluates to `true`.
+      If none of these conditions evaluate to `true`, then the code in the `else` block at the
+      end is executed (if it exists). </p>
+    <p> To me, the initial need to evaluate the condition of any conditional statement, whether
+      it’s`if` or `elif`, kind of creates a subtle sense of “wondering what will happen next”.
+      Will we execute this block of the conditional? Will we not? Each time we have to evaluate
+      a new `elif` statement, it’s almost as if we’re stepping into another level within the
+      conditional, and the anticipation for which block we might execute keeps growing. Then,
+      reaching the `else` block is like “oh, we’re here!” </p>
+    <p> To represent this musically, I have a motif that will get played each time before the
+      condition of an `if` or `elif` statement is evaluated: <br>
+      <button type="button" onclick="playSound('conditionalMotif')" class="playButton">
+        <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
+      <br>
+      This is a broken dominant 7th chord. I chose this specific chord because it sounds
+      “unresolved”, like it’s leading into something else that’s going to happen next. To see
+      what I mean, listen to this other chord, a major chord, which should sound a lot more
+      “resolved” in comparison: <br>
+      <button type="button" onclick="playSound('majorChord')" class="playButton">
+        <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
+      <br>
+      A dominant 7th chord naturally resolves (or “leads into”) to the root, like this: <br>
+      <button type="button" onclick="playSound('resolve')" class="playButton">
+        <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
+      <br>
+      Although that’s not what happens in my program, that’s why the chord that I used should
+      sound like it’s preparing the way for something after it. The goal is that on its own,
+      it leaves you with a brief feeling of curiosity, similar to that “subtle sense of wonder”
+      that I was talking about earlier. </p>
+    <p> Each time a new `elif` statement is about to be evaluated, the same motif is played.
+      However, with each consecutive statement, the motif modulates up by a perfect fourth. <br>
+      <button type="button" onclick="playSound('modulate4th')" class="playButton">
+        <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
+      <br>
+      This is to represent the fact that we’re going further and further into the conditional,
+      and each `elif` statement is like another distinct step. This also makes the pitch get
+      higher and higher, which is consistent with the idea of the increasing anticipation and
+      unresolved-ness as we have to evaluate more and more statements in the conditional. </p>
+    <p> The decision to use a perfect fourth was kind of arbitrary, kind of not. I didn’t want
+      to pick a random interval because that could sound really weird and have a lot of clashing
+      pitches. I narrowed it down to either a perfect fourth or a perfect fifth.
+      Fourths and fifths are both adjacent to the root on the Circle of Fifths/Circle of Fourths.
+      This means that only 1 note in the key (but not the chord) would be different than before,
+      which prevents the pitches from immeditely clashing. I chose fourths, and not fifths, just
+      because fifths would be too mainstream. I wanted to be different and slightly edgy, haha. </p>
+    <p> Finally, when and if we get to the `else` statement (meaning that none of the conditions
+      were true), we play a different motif. The else statement is different in that we don’t
+      evaluate a condition. It also leaves nothing to be anticipated, since this is the last
+      block and we’re definitely going to execute it. So the musical motif reflects this by
+      resolving and ending on the root. <br>
+      <button type="button" onclick="playSound('resolveElse')" class="playButton">
+        <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
+      <br> </p>
 
-    <ul>
-    <li>
-    When a have a group of conditional statements, the `if` statement condition is evaluated first. If that condition
-    isn’t true, then it moves to the `elif/else` statements. </li>
+    <h3 id="stackFrames"> S T A C K _ F R A M E S </h3>
+    <p> I came up with an idea for how to represent stack frames sonically based on a picture
+      that Prof Joe Politz drew during a staff meeting in 2018 (@Joe: surprise! I didn’t tell you
+      this). If my memory serves me correctly, it went something like this, for a Java program: </p>
+    <img src="musicalExplanations/programPictureExample.png" style="width:100%; height: auto">
+    <p> I think that this picture is a pretty cool way to represent the “lifetime” of a program,
+      and I felt like it could be very well-replicated in audio by using harmonics. </p>
+    <p> <i> A quick crash course in harmonics and timbre: </i> <br>
+      This is a clean sine wave, with a frequency of 220Hz: <br>
+      <button type="button" onclick="playSound('resolveElse')" class="playButton">
+        <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
+      <br>
+      This next clip starts off with the same 220Hz sine wave, and after a while, we add a
+      440Hz sine wave on top of it: <br>
+      <button type="button" onclick="playSound('resolveElse')" class="playButton">
+        <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
+      <br>
+      We can continue to add sine waves, where each new wave is 220Hz (since that’s the base
+      frequency) more than the previous (440Hz, 660Hz, 880Hz, etc): <br>
+      <button type="button" onclick="playSound('resolveElse')" class="playButton">
+        <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
+      <br>
+      Now, that probably sounds like a big chord with a bunch of dinstinct notes. That’s because
+      you heard them being added. Here’s the exact same thing you heard at the end (you’ll have
+      to take my word for it), after all of the harmonics were added: <br>
+      <button type="button" onclick="playSound('resolveElse')" class="playButton">
+        <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
+      <br>
+      Sounds like a different “color” of sound compared to the clean sine wave, right? This is
+      one of the building blocks of sound synthesis! Each wave is called a “harmonic”, and we
+      can synthesize different types of sounds (we call it “timbre”) by changing the harmonics
+      we include in the sound and the amplitude of each one. </p>
+    <p> This parallels the concept from the picture I showed above. We add the next harmonic to
+      the overall background sound at the time that a new stack frame is added, and we remove
+      that harmonic at the time that the stack frame is removed.  </p>
+    <p> Looking at it on a deeper level, the picture visually represents the program in a
+      different space in memory at different points in time. Having a different amount of
+      harmonics creates a different timbre for each of these spaces in memory, based on the
+      number of frames on the stack. </p>
+    <p> Each harmonic has its own pitch, but together, they can be all be different parts of
+      a single sound. Similarly, each stack frame has its own scope, but together, each stack
+      frame below the current one plays a part in shaping the execution of the same program. </p>
+    <p> I hope that your mind is now blown 🤯 </p>
 
-    <li>
-    Each time we evaluate a condition, a musical motif is played. As we move through the list of conditionals, the
-    musical motif modulates up by a perfect 4th. The decision about that interval was somewhat arbitrary, somewhat
-    not. I figured that I couldn’t just pick a completely random interval because that might sound terrible. I decided
-    on perfect 4ths because the current key signature will only differ by 1 accidental (because they’re adjacent on
-    the Circle of Fifths/Fourths). </li>
-
-    <li>
-    The motif ends on a minor 7th scale degree, and it’s meant to sound “unresolved”, as we haven’t found a
-    condition that’s true yet. The modulation parallels an increasing sense of anticipation to arrive at a
-    statement that we can execute. </li>
-
-    <li>
-    At `else`, we play a motif that resolves back to the original key and the root, because the condition is
-    now “resolved”, as we have gone through every other condition and have finally arrived at the end. </li>
-    </ul>
-
-    <p style="margin-top: 2em;"> Stack frame harmonics </p>
-    <ul>
-      <li>Each time a new stack frame is added, add a new harmonic to the overall sound</li>
-      <li>When a stack frame is finished and is taken off the stack, remove that harmonic </li>
-      <li>Represents the program in a different area of memory at different points in time: harmonics give the
-    sound a different timbre </li>
-      <li>Harmonics on top of each other are all different notes (parallel: different spaces in higher/lower memory), but together,
-    they are different parts of a single sound (parallel: when there are a lot of stack frames, at any given time, all stack
-    frames below the current one play a part in shaping the execution of the same program)</li>
-    </ul>
   </div>
 
 </body>
