@@ -1908,6 +1908,7 @@ function removeFrame(stackFrameI)
 
      newObject.innerHTML = string;
      document.getElementById("heap_space").appendChild(newObject);
+     document.getElementById("list_appears").play();
  }
 
 /*
