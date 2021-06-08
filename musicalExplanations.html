@@ -26,6 +26,18 @@
   <audio id="resolveElse">
     <source src="musicalExplanations/sounds/resolveElse.wav" type="audio/wav">
   </audio>
+  <audio id="cleanSine220">
+    <source src="musicalExplanations/sounds/cleanSine220.wav" type="audio/wav">
+  </audio>
+  <audio id="cleanSine220_440">
+    <source src="musicalExplanations/sounds/cleanSine220+440.wav" type="audio/wav">
+  </audio>
+  <audio id="cleanSine220_harmonics">
+    <source src="musicalExplanations/sounds/cleanSine220+harmonics.wav" type="audio/wav">
+  </audio>
+  <audio id="sawtooth220">
+    <source src="musicalExplanations/sounds/sawtooth220.wav" type="audio/wav">
+  </audio>
   <div id="heading">
     <h1>C O D A P H O N E
       <span class="subheading"> ➞ Auditory <br> ➞ representations <br> ➞ of programs </span>
@@ -110,32 +122,34 @@
       and I felt like it could be very well-replicated in audio by using harmonics. </p>
     <p> <i> A quick crash course in harmonics and timbre: </i> <br>
       This is a clean sine wave, with a frequency of 220Hz: <br>
-      <button type="button" onclick="playSound('resolveElse')" class="playButton">
+      <button type="button" onclick="playSound('cleanSine220')" class="playButton">
         <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
       <br>
       This next clip starts off with the same 220Hz sine wave, and after a while, we add a
       440Hz sine wave on top of it: <br>
-      <button type="button" onclick="playSound('resolveElse')" class="playButton">
+      <button type="button" onclick="playSound('cleanSine220_440')" class="playButton">
         <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
       <br>
-      We can continue to add sine waves, where each new wave is 220Hz (since that’s the base
-      frequency) more than the previous (440Hz, 660Hz, 880Hz, etc): <br>
-      <button type="button" onclick="playSound('resolveElse')" class="playButton">
+      We can continue to add sine waves, where each new wave is 220Hz more than the previous,
+      since 220Hz is the base frequency. So 440Hz, then 660Hz, 880Hz, etc. The volume is equalized
+      after each wave is added because otherwise it would get way too loud and annoying: <br>
+      <button type="button" onclick="playSound('cleanSine220_harmonics')" class="playButton">
         <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
       <br>
-      Now, that probably sounds like a big chord with a bunch of dinstinct notes. That’s because
-      you heard them being added. Here’s the exact same thing you heard at the end (you’ll have
-      to take my word for it), after all of the harmonics were added: <br>
-      <button type="button" onclick="playSound('resolveElse')" class="playButton">
+      Now, you might still be hearing that as a big chord with a bunch of dinstinct notes, instead
+      of as one tone. I hear that sometimes. It’s because we heard each note as it was added.
+      Here’s the exact same thing you heard at the end (you’ll have
+      to take my word for it), after everything was added: <br>
+      <button type="button" onclick="playSound('sawtooth220')" class="playButton">
         <img src="musicalExplanations/playButton.png" alt="Play" class="playButton"></button>
       <br>
-      Sounds like a different “color” of sound compared to the clean sine wave, right? This is
-      one of the building blocks of sound synthesis! Each wave is called a “harmonic”, and we
-      can synthesize different types of sounds (we call it “timbre”) by changing the harmonics
-      we include in the sound and the amplitude of each one. </p>
-    <p> This parallels the concept from the picture I showed above. We add the next harmonic to
-      the overall background sound at the time that a new stack frame is added, and we remove
-      that harmonic at the time that the stack frame is removed.  </p>
+      Sounds like a different “color” of sound (but the same pitch!) compared to the clean sine
+      wave, right? This is one of the building blocks of sound synthesis! Each wave is called a
+      “harmonic”, and we can synthesize different types of sounds, or "timbres", by changing
+      the harmonics we include in the sound and the amplitude of each one. </p>
+    <p> I used harmonics to parallel the concept from the picture I showed above. We add the
+      next harmonic to the overall background sound at the time that a new stack frame is added,
+      and we remove that harmonic at the time that the stack frame is removed.  </p>
     <p> Looking at it on a deeper level, the picture visually represents the program in a
       different space in memory at different points in time. Having a different amount of
       harmonics creates a different timbre for each of these spaces in memory, based on the
