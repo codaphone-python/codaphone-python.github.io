@@ -629,6 +629,7 @@ function maybeParseBoolean(expression)
 {
     let comp = [];
 
+    let notSubstring = true;
     let i = 0;
     while(i < expression.length)
     {
@@ -636,15 +637,18 @@ function maybeParseBoolean(expression)
         let maybeOperator = expression.substring(i, i+2);
 
         //operator, push and update precedence
-        if(booleanOps.includes(maybeOperator)
-          || booleanOps.includes((maybeOperator = currChar))
-          || booleanOps.includes((maybeOperator = expression.substring(i, i+3))))
+        if(notSubstring && (booleanOps.includes(maybeOperator)
+         || booleanOps.includes((maybeOperator = currChar))
+         || booleanOps.includes((maybeOperator = expression.substring(i, i+3)))))
         {
+            if((maybeOperator.length == 3 && expression[i+3] !== " ") ||
+                  (maybeOperator === "or" && expression[i+2] !== " ")) {
+                notSubstring = false; //must have space after these operators
+                continue;
+            }
             comp.push(maybeOperator);
-
-            //update index for 2-character or 3-character operator
-            if(maybeOperator.length == 2) { i++; }
-            else if(maybeOperator.length == 3) { i += 2; }
+            i += (maybeOperator.length - 1); //update index
+            notSubstring = true;
         }
 
         //space, do nothing
@@ -654,6 +658,7 @@ function maybeParseBoolean(expression)
         else
         {
             let startsFrom = expression.substring(i);
+            notSubstring = true;
 
             let j = 0;
             //look for boolean operator
@@ -667,12 +672,18 @@ function maybeParseBoolean(expression)
                     //jump to the index after the expression
                     j += (inParentheses.length)
                 }
+                let op = "";
                 //boolean operator, at end of term
-                if(booleanOps.includes(startsFrom.charAt(j))
-                  || booleanOps.includes(startsFrom.substring(j,j+2))
-                  || booleanOps.includes(startsFrom.substring(j,j+3)))
+                if(booleanOps.includes((op = startsFrom.charAt(j)))
+                  || booleanOps.includes((op = startsFrom.substring(j,j+2)))
+                  || booleanOps.includes((op = startsFrom.substring(j,j+3))))
                 {
-                    break;
+                    if((op === "and" || op === "or" || op === "not"))
+                    {
+                        if(startsFrom[j+op.length] === " "
+                          && j > 0 && startsFrom[j-1] === " ") { break; }
+                    }
+                    else { break; }
                 }
             }
             let termLength = j;

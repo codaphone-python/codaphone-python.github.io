@@ -73,8 +73,10 @@
       <li> Dictionaries not implemented </li>
       <li> +=, -=, *=, etc. not implemented </li>
       <li> List literals inside list literals, list literals as arguments to functions </li>
-      <li> Parsing is incorrect for expressions that contain boolean operators as a substring
-         (ex: x = True and is_stubborn) </li>
+      <li> When a numeric literal is on the left side of the comparison operator, it's not
+              evaluated as a boolean expression (ex: x = 5 < 7)</li>
+      <li> When a boolean expression is short-circuited and the remainder of the expression
+              is not a boolean literal, the line is not updated correctly </li>
       <li> Returning from a function inside a conditional statement or a loop </li>
     </ul>
   </div>
