@@ -73,10 +73,16 @@
       <li> Dictionaries not implemented </li>
       <li> +=, -=, *=, etc. not implemented </li>
       <li> List literals inside list literals, list literals as arguments to functions </li>
+      <!--
       <li> When a numeric literal is on the left side of the comparison operator, it's not
               evaluated as a boolean expression (ex: x = 5 < 7)</li>
+      -->
       <li> When a boolean expression is short-circuited and the remainder of the expression
               is not a boolean literal, the line is not updated correctly </li>
+      <li> A variable with name 'a' or 'an' won't get properly replaced with its value
+              on the line </li>
+      <li> Highlighting/replacing is off when the name of the variable is a substring
+              of something that is present earlier in the expression (ex: x = True and r) </li>
       <li> Returning from a function inside a conditional statement or a loop </li>
     </ul>
   </div>

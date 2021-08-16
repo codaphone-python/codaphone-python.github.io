@@ -1557,6 +1557,8 @@ function isNumeric(value)
     if(!(digits.includes(value[0]))) { return false; }
     for(let i = 0; i < operators.length; i++)
         { if(value.substring(1).includes(operators[i])) { return false; } }
+    for(let i = 0; i < booleanOps.length; i++)
+        { if(value.substring(1).includes(booleanOps[i])) { return false; } }
     return true;
 }
 
